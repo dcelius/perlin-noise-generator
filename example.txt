@@ -1,0 +1,3 @@
+imsize 2048 2048
+color 250 250 209
+freq 1

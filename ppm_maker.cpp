@@ -74,14 +74,8 @@ float ratio(int x, int y, int originx, int originy, int a=1){
     return a / (a + sqrt(pow(x - originx, 2) + pow(y - originy, 2)));
 }
 
-void createImage(int ***image, int width, int height, int seed){
+void createImage(int ***image, int width, int height, int frequency, int r, int g, int b){
     double new_ratio;
-    // Generate a new sequence of random numbers using the seed
-    srand(seed);
-    // Find random values to make a random color
-    int r = rand() % 255;
-    int g = rand() % 255;
-    int b = rand() % 255;
     double a;
     double f;
     double min = 9999.0;
@@ -95,7 +89,7 @@ void createImage(int ***image, int width, int height, int seed){
             a = 1.0;
             f = 0.01;
             new_ratio = 0;
-            for (int k = 0; k < 8; k++){
+            for (int k = 0; k < frequency; k++){
                 new_ratio += a*noise(i * f, j * f, p);
                 a *= 0.5;
                 f *= 2.0;
@@ -190,6 +184,8 @@ int main(int argc, char *argv[]){
     int index;
     int width;
     int height;
+    int r = 255, g = 255, b = 255;
+    int frequency = 1;
     srand(time(0));
     int seed = rand();
     if (image_descriptor.is_open()){
@@ -218,15 +214,31 @@ int main(int argc, char *argv[]){
                         return -1;
                     }
                 }
-                // Read for seed keyword
-                if (keyword.compare("seed") == 0){
-                    // Try to save seed
+                if (keyword.compare("color") == 0){
                     try{
                         line.erase(0, index + 1);
-                        seed = stoi(line);
+                        index = line.find(" ");
+                        r = stoi(line.substr(0, index));
+                        line.erase(0, index + 1);
+                        index = line.find(" ");
+                        g = stoi(line.substr(0, index));
+                        line.erase(0, index + 1);
+                        index = line.find(" ");
+                        b = stoi(line.substr(0, index));
+                        if (r < 0 || g < 0 || b < 0 || r > 255 || g > 255 || b > 255) 
+                            throw invalid_argument("color must be in 0-255 range");
                     }
                     catch (exception e){
-                        cout << "Invalid seed, must be an integer, using random seed" << endl;
+                        cout << "Invalid color" << endl;
+                    }
+                }
+                if (keyword.compare("freq") == 0){
+                    try{
+                        line.erase(0, index + 1);
+                        frequency = stoi(line);
+                    }
+                    catch (exception e){
+                        cout << "Invalid frequency" << endl;
                     }
                 }
             }
@@ -259,7 +271,7 @@ int main(int argc, char *argv[]){
     }
     // Run the new picture array through the image creator
     try {
-        createImage(newImage, width, height, seed);
+        createImage(newImage, width, height, frequency, r, g, b);
     }
     catch (exception e){
         cerr << "Something went wrong during image manipulation";

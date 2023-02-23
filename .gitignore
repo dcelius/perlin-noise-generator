@@ -30,3 +30,7 @@
 *.exe
 *.out
 *.app
+
+ppm_maker
+perlin_ppm_maker
+*.ppm
